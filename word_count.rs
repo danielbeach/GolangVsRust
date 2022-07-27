@@ -1,25 +1,18 @@
 use std::fs::File;
-use std::io::{self, prelude::*, BufReader};
+use std::io::{prelude::*, BufReader};
 use std::collections::HashMap;
 
-fn main() -> io::Result<()> {
-    let rdr = BufReader::new(File::open("confessions.txt").expect("problem"));
-    let to_replace = vec![".", ",", ";", "?", "!", "a", "the"];
+fn main() {
+    let _ = count_words();
+}
+
+fn count_words() -> Result<HashMap<String, i32>, String> {
+    let rdr = BufReader::new(File::open("confessions.txt").expect("unable to open file!"));
     let mut word_counts = HashMap::new();
-    for line in rdr.lines() {
-        if let Ok(mut ln) = line {
-            for rpl in to_replace.iter() {
-                ln = ln.replace(rpl, "");
-                }
-            for word in ln.split_whitespace() {
-                    *(word_counts.entry(word.to_string()).or_insert(0)) += 1;
-            }
-        }
-    }
-    for (k, v) in word_counts {
-        if v > 100 {
-            println!("{} / {}", k, v);
-        }
-    }
-    Ok(())
+    let _: Vec<_> = rdr.lines().map(|mut line| {
+            line = Ok(line.unwrap().replace(".", "").replace(",", "").replace(";", "").replace("?", "").replace("!", "").replace("a", "").replace("the", "")); // could be a regex replace here, but using pure rust so hey ho
+            line.unwrap().split_whitespace().for_each(|word| { *(word_counts.entry(word.to_string()).or_insert(0)) += 1; });
+        }).collect();
+    let _ = &word_counts.iter().filter(|&(_,v)| v > &100).for_each(|(k,v)| println!("{} / {}", k, v) );
+    Ok(word_counts)
 }
